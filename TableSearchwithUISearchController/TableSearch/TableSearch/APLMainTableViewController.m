@@ -10,6 +10,7 @@
 #import "APLDetailViewController.h"
 #import "APLResultsTableController.h"
 #import "APLProduct.h"
+#import <CouchbaseLite/CouchbaseLite.h>
 
 @interface APLMainTableViewController () <UISearchBarDelegate, UISearchControllerDelegate, UISearchResultsUpdating>
 
@@ -24,6 +25,10 @@
 
 @end
 
+static NSString * const kTitleKey = @"title";
+static NSString * const kHardwareType = @"hardwareType";
+static NSString * const kYearIntroduced = @"yearIntroduced";
+static NSString * const kIntroPrice = @"introPrice";
 
 #pragma mark -
 
@@ -32,40 +37,76 @@
 - (void)viewDidLoad {
 	[super viewDidLoad];
 
-    _resultsTableController = [[APLResultsTableController alloc] init];
-    _searchController = [[UISearchController alloc] initWithSearchResultsController:self.resultsTableController];
-    self.searchController.searchResultsUpdater = self;
-    [self.searchController.searchBar sizeToFit];
-    self.tableView.tableHeaderView = self.searchController.searchBar;
-    
-    // we want to be the delegate for our filtered table so didSelectRowAtIndexPath is called for both tables
-    self.resultsTableController.tableView.delegate = self;
-    self.searchController.delegate = self;
-    self.searchController.dimsBackgroundDuringPresentation = NO; // default is YES
-    self.searchController.searchBar.delegate = self; // so we can monitor text changes + others
-    
-    // Search is now just presenting a view controller. As such, normal view controller
-    // presentation semantics apply. Namely that presentation will walk up the view controller
-    // hierarchy until it finds the root view controller or one that defines a presentation context.
-    //
-    self.definesPresentationContext = YES;  // know where you want UISearchController to be displayed
+	_resultsTableController = [[APLResultsTableController alloc] init];
+	_searchController = [[UISearchController alloc] initWithSearchResultsController:self.resultsTableController];
+	self.searchController.searchResultsUpdater = self;
+	[self.searchController.searchBar sizeToFit];
+	self.tableView.tableHeaderView = self.searchController.searchBar;
+
+	// we want to be the delegate for our filtered table so didSelectRowAtIndexPath is called for both tables
+	self.resultsTableController.tableView.delegate = self;
+	self.searchController.delegate = self;
+	self.searchController.dimsBackgroundDuringPresentation = NO; // default is YES
+	self.searchController.searchBar.delegate = self; // so we can monitor text changes + others
+
+	// Search is now just presenting a view controller. As such, normal view controller
+	// presentation semantics apply. Namely that presentation will walk up the view controller
+	// hierarchy until it finds the root view controller or one that defines a presentation context.
+	//
+	self.definesPresentationContext = YES;  // know where you want UISearchController to be displayed
 }
 
 - (void)viewDidAppear:(BOOL)animated {
-    [super viewDidAppear:animated];
-    
-    // restore the searchController's active state
-    if (self.searchControllerWasActive) {
-        self.searchController.active = self.searchControllerWasActive;
-        _searchControllerWasActive = NO;
-        
-        if (self.searchControllerSearchFieldWasFirstResponder) {
-            [self.searchController.searchBar becomeFirstResponder];
-            _searchControllerSearchFieldWasFirstResponder = NO;
-        }
-    }
+	[super viewDidAppear:animated];
+
+	//Getting the sorted array of products
+	self.products = [self productsSortedByKey:kIntroPrice];
+
+	// restore the searchController's active state
+	if (self.searchControllerWasActive) {
+		self.searchController.active = self.searchControllerWasActive;
+		_searchControllerWasActive = NO;
+
+		if (self.searchControllerSearchFieldWasFirstResponder) {
+			[self.searchController.searchBar becomeFirstResponder];
+			_searchControllerSearchFieldWasFirstResponder = NO;
+		}
+	}
+	[self.tableView reloadData];
 }
 
+#pragma mark - Get Products from the DB
+
+- (NSArray *)productsSortedByKey:(NSString *)key {
+	CBLQuery *myQuery = [[self productView] createQuery];
+	NSString *sortDescriptorKey = [NSString stringWithFormat:@"value.%@",key];
+	myQuery.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:sortDescriptorKey ascending:YES]];
+	NSError *error;
+	CBLQueryEnumerator *result = [myQuery run:&error];
+	if (!error) {
+		NSMutableArray *tempProducts = [NSMutableArray arrayWithCapacity:result.count];
+		for (CBLQueryRow * row in result) {
+			NSDictionary *itemDict = row.value;
+			APLProduct *product = [MTLJSONAdapter modelOfClass:APLProduct.class fromJSONDictionary:itemDict error:nil];
+			[tempProducts addObject:product];
+		}
+		return tempProducts.copy;
+	} else {
+		NSLog(@"Error querying view %@", error.localizedDescription);
+		return nil;
+	}
+
+}
+
+- (CBLView*)productView {
+	CBLView* view = [self.database viewNamed: @"product_view"];
+	if (!view.mapBlock) {
+		[view setMapBlock: MAPBLOCK({
+			emit(doc[@"id"], doc);
+		}) reduceBlock: nil version: @"1"];
+	}
+	return view;
+}
 
 #pragma mark - UISearchBarDelegate
 

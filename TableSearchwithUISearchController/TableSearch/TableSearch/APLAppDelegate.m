@@ -28,15 +28,13 @@ static NSString * const kDidSaveInitialData = @"kDidSaveInitialData";
 		[self setupInitialData];
 	}
 
-	/*
 	UINavigationController *navigationController = (UINavigationController *)[self.window rootViewController];
 	// note we want the first view controller (not the visibleViewController) in case
 	// we are being store from UIStateRestoration
 	//
 	APLMainTableViewController *viewController = (APLMainTableViewController *)navigationController.viewControllers[0];
-	viewController.products = products;
-	 */
-	
+	viewController.database = self.database;
+
 	return YES;
 }
 

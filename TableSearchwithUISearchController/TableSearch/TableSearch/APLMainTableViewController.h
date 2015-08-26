@@ -7,9 +7,11 @@
  */
 
 #import "APLBaseTableViewController.h"
+@class CBLDatabase;
 
 @interface APLMainTableViewController : APLBaseTableViewController
 
 @property (nonatomic, copy) NSArray *products;
+@property (nonatomic, strong) CBLDatabase *database;
 
 @end
