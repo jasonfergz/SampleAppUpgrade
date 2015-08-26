@@ -7,9 +7,11 @@
  */
 
 @import UIKit;
+@class CBLDatabase;
 
 @interface APLAppDelegate : NSObject <UIApplicationDelegate>
 
 @property (nonatomic, strong) UIWindow *window;
+@property (nonatomic, strong) CBLDatabase *database;
 
 @end
