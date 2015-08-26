@@ -1,0 +1,17 @@
+PODS:
+  - couchbase-lite-ios (1.1.0):
+    - couchbase-lite-ios/Core (= 1.1.0)
+  - couchbase-lite-ios/Core (1.1.0)
+  - Mantle (2.0.4):
+    - Mantle/extobjc (= 2.0.4)
+  - Mantle/extobjc (2.0.4)
+
+DEPENDENCIES:
+  - couchbase-lite-ios
+  - Mantle
+
+SPEC CHECKSUMS:
+  couchbase-lite-ios: fc7be01032dc1a4c923d1a52b6734eb9b20bf072
+  Mantle: 6bee68168423948be0c0c5924832bf3af188e099
+
+COCOAPODS: 0.38.2
