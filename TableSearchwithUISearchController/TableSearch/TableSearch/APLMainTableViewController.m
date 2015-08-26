@@ -78,15 +78,25 @@ static NSString * const kIntroPrice = @"introPrice";
 #pragma mark - Get Products from the DB
 
 - (NSArray *)productsSortedByKey:(NSString *)key {
+
+	//Creating a query from the view returned by my -productView method
 	CBLQuery *myQuery = [[self productView] createQuery];
+
+	//Specifying the sort for my query so my data is in the order I want to display it
 	NSString *sortDescriptorKey = [NSString stringWithFormat:@"value.%@",key];
 	myQuery.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:sortDescriptorKey ascending:YES]];
+
+	//Running the query
 	NSError *error;
 	CBLQueryEnumerator *result = [myQuery run:&error];
 	if (!error) {
 		NSMutableArray *tempProducts = [NSMutableArray arrayWithCapacity:result.count];
+
+		//Stepping through my query results
 		for (CBLQueryRow * row in result) {
 			NSDictionary *itemDict = row.value;
+
+			//Converting the properties of my document back to an APLProduct
 			APLProduct *product = [MTLJSONAdapter modelOfClass:APLProduct.class fromJSONDictionary:itemDict error:nil];
 			[tempProducts addObject:product];
 		}
@@ -99,9 +109,11 @@ static NSString * const kIntroPrice = @"introPrice";
 }
 
 - (CBLView*)productView {
+	//Creating a view of my data
 	CBLView* view = [self.database viewNamed: @"product_view"];
 	if (!view.mapBlock) {
 		[view setMapBlock: MAPBLOCK({
+			//Passing back the document ID as the key in the CBLQueryRow and the document as the value
 			emit(doc[@"id"], doc);
 		}) reduceBlock: nil version: @"1"];
 	}

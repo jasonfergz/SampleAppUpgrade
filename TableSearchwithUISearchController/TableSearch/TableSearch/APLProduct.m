@@ -10,6 +10,7 @@
 
 @implementation APLProduct
 
+// Method used by Mantle for converting the this class to and from a NSDictionary
 + (NSDictionary *)JSONKeyPathsByPropertyKey {
 	return @{@"title":@"title",
 			 @"hardwareType":@"hardwareType",

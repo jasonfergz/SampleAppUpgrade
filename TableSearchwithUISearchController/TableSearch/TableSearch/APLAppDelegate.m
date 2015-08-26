@@ -20,6 +20,7 @@ static NSString * const kDidSaveInitialData = @"kDidSaveInitialData";
 
 
 	NSError *dbCreationError;
+	//Initialize the database. If one does not exist with the name passed in it will create it.
 	self.database = [[CBLManager sharedInstance] databaseNamed:kDefaultDatabaseName error:&dbCreationError];
 	NSAssert(dbCreationError == nil, @"Failure creating database. Error = %@",dbCreationError.localizedDescription);
 
@@ -39,8 +40,6 @@ static NSString * const kDidSaveInitialData = @"kDidSaveInitialData";
 }
 
 - (void)setupInitialData {
-	// load our data source and hand it over to APLMainTableViewController
-	//
 	NSArray *products = @[[APLProduct productWithType:[APLProduct deviceTypeTitle]
 												 name:@"iPhone"
 												 year:@2007
@@ -80,9 +79,12 @@ static NSString * const kDidSaveInitialData = @"kDidSaveInitialData";
 						  ];
 
 	for (APLProduct *product in products) {
+		//Creating an new document and specifying the ID I want it to have.
 		CBLDocument* document = [self.database documentWithID: product.title];
 		NSError* saveError;
+		//Transforming APLProduct into a NSDictionary using Mantle
 		NSDictionary *properties = [MTLJSONAdapter JSONDictionaryFromModel:product error:nil];
+		//Saving the document with the product data as its properties to my database
 		if (![document putProperties: properties error: &saveError]) {
 			NSLog(@"document putProperties FAILED!!!!\nDocument ID = %@\nError =%@",document.documentID,saveError);
 		}
