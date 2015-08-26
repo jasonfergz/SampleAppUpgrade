@@ -6,7 +6,9 @@
  The data model object describing the product displayed in both main and results tables.
  */
 
-@interface APLProduct : NSObject <NSCoding>
+#import <Mantle/Mantle.h>
+
+@interface APLProduct : MTLModel <MTLJSONSerializing>
 
 @property (nonatomic, copy) NSString *title;
 @property (nonatomic, copy) NSString *hardwareType;

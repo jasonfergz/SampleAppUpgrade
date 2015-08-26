@@ -10,6 +10,13 @@
 
 @implementation APLProduct
 
++ (NSDictionary *)JSONKeyPathsByPropertyKey {
+	return @{@"title":@"title",
+			 @"hardwareType":@"hardwareType",
+			 @"yearIntroduced":@"yearIntroduced",
+			 @"introPrice":@"introPrice",};
+}
+
 + (APLProduct *)productWithType:(NSString *)type name:(NSString *)name year:(NSNumber *)year price:(NSNumber *)price {
 	APLProduct *newProduct = [[self alloc] init];
 	newProduct.hardwareType = type;
